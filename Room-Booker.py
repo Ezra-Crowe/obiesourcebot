@@ -3,11 +3,13 @@ import sys, os
 import discord
 import requests
 import json
+from bs4 import BeautifulSoup
+
 
 def book_room():
     #add room here
     session = requests.Session()
-    eid = 55287
+    eid = 54868
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
     headers = {
@@ -30,7 +32,7 @@ def book_room():
         "add[gid]": "11326",
         "add[lid]": "6052",
         "add[start]": "2023-10-1 10:00",
-        "add[checksum]": "eaf0246ccca64e2839ddc455c90b3c88",
+        "add[checksum]": "bfbafdf865a97d36e4a515b46afcf948",
         "lid": "6052",
         "gid": "11326",
         "start": "2023-10-1" ,
@@ -42,7 +44,6 @@ def book_room():
     checksum = ""
 
     #gets the checksum if the add is a sucess
-    print(response.text)
     if response.text == "{\"error\":\"Sorry, the selected times have become unavailable.\",\"isRefreshRequired\":true}":
         print("respose was not given a status code of 200")
     else:
@@ -73,7 +74,7 @@ def book_room():
         "session": "36627955",
         "fname": "security vulnerability",
         "lname": "student",
-        "email": "abcd@oberlin.edu",
+        "email": "abcde@oberlin.edu",
         "q6507": "Study",
         "q8617": "",
         "bookings": json.dumps([{
@@ -97,4 +98,9 @@ def book_room():
         print(response.status_code)
         print(response.text)
 
-book_room()
+MUDD_url_req = requests.get('https://oberlin.libcal.com/reserve/mudd-main-level-study-rooms')
+MUDD_soup = BeautifulSoup(MUDD_url_req.text, 'html.parser')
+
+print(MUDD_soup.title.text)
+
+#book_room()
