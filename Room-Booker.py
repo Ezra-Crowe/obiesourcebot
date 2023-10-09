@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 def book_room():
     #add room here
     session = requests.Session()
-    eid = 54868
+    eid = 54869
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
     headers = {
@@ -32,11 +32,11 @@ def book_room():
         "add[gid]": "11326",
         "add[lid]": "6052",
         "add[start]": "2023-10-1 10:00",
-        "add[checksum]": "bfbafdf865a97d36e4a515b46afcf948",
+        "add[checksum]": "cb5a52adffd255d2deb44a6a247bfd0d",
         "lid": "6052",
         "gid": "11326",
-        "start": "2023-10-1" ,
-        "end": "2023-10-02"
+        "start": "2023-10-06" ,
+        "end": "2023-10-07"
     }
 
     response = session.post(url, headers=headers, data=data)
@@ -83,8 +83,8 @@ def book_room():
             "seat_id": 0,
             "gid": 11326,
             "lid": 6052,
-            "start": "2023-10-01 10:00",
-            "end": "2023-10-01 11:00",
+            "start": "2023-10-06 7:00",
+            "end": "2023-10-06 8:00",
             "checksum": checksum
         }]),
         "returnUrl": "/reserve/mudd-main-level-study-rooms",
@@ -103,4 +103,4 @@ MUDD_soup = BeautifulSoup(MUDD_url_req.text, 'html.parser')
 
 print(MUDD_soup.title.text)
 
-#book_room()
+book_room()
