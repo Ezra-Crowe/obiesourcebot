@@ -36,7 +36,7 @@ def book_room(room, startTime, name):
     if not (eid in eid_arr.values()):
         return "An invalid room was given"
 
-    if times[eid] == None:
+    if times.get(eid) == None:
         return "an invalid start time was given"
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
@@ -186,5 +186,5 @@ def get_rooms(date):
 #print(MUDD_soup.title.text)
 
 #book_room()
-get_rooms("2023-10-25")
-print(book_room("101C", "2023-10-25 23:15:00", "test"))
+get_rooms("2023-10-24")
+print(book_room("101C", "2023-10-24 23:15:00", "test"))
