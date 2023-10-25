@@ -17,7 +17,7 @@ eid_arr = {
     "112A" : 55292
 }
 
-booking_count = 1
+booking_count = 2
 
 times ={}
 
@@ -36,9 +36,7 @@ def book_room(room, startTime, name):
     if not (eid in eid_arr.values()):
         return "An invalid room was given"
 
-    print(times)
-
-    if times[eid].get(startTime) == None:
+    if times[eid] == None:
         return "an invalid start time was given"
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
@@ -72,6 +70,7 @@ def book_room(room, startTime, name):
     response = session.post(url, headers=headers, data=data)
     print("Add returned a", response.status_code)
     checksum = ""
+    end = ""
 
     #gets the checksum if the add is a sucess
     if response.text == "{\"error\":\"Sorry, the selected times have become unavailable.\",\"isRefreshRequired\":true}":
@@ -80,7 +79,7 @@ def book_room(room, startTime, name):
         response_json = response.json()
         bookings = response_json.get('bookings')
         checksum = bookings[0]['checksum']
-        print(bookings)
+        end = bookings[0]['end']
         print("checksum:", checksum)
         #print("The text was", response.text)
 
@@ -101,7 +100,7 @@ def book_room(room, startTime, name):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
         }
         print("startTime: " + startTime)
-        print ("end " +  (datetime.strptime(startTime[-8:], "%H:%M:%S") + timedelta(hours=1)).strftime("%H:%M"))
+        print ("end " + end)
         data = {
         "session": "36627955",
         "fname": name,
@@ -116,7 +115,7 @@ def book_room(room, startTime, name):
             "gid": 11326,
             "lid": 6052,
             "start": startTime,
-            "end": startTime[:11] + (datetime.strptime(startTime[-8:], "%H:%M:%S") + timedelta(hours=1)).strftime("%H:%M"),
+            "end": end,
             "checksum": checksum
         }]),
         "returnUrl": "/reserve/mudd-main-level-study-rooms",
@@ -188,4 +187,4 @@ def get_rooms(date):
 
 #book_room()
 get_rooms("2023-10-25")
-print(book_room("101B", "2023-10-25 22:00:00", "test"))
+print(book_room("101C", "2023-10-25 23:15:00", "test"))
