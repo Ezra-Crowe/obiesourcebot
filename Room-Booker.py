@@ -6,7 +6,6 @@ import json
 import numbers
 from datetime import datetime, timedelta
 
-#GetEvents() is important
 
 eid_arr = {
     "101A" : 43398,
@@ -17,7 +16,7 @@ eid_arr = {
     "112A" : 55292
 }
 
-booking_count = 2
+booking_count = 0
 
 times ={}
 
@@ -25,9 +24,11 @@ session = requests.Session()
 
 def book_room(room, startTime, name):
     global booking_count
+
     #add room here
     eid = -1
 
+    #Transfers any room numbers given to their corresponding eid
     if isinstance(room, numbers.Number):
         eid = room
     else:
@@ -64,7 +65,7 @@ def book_room(room, startTime, name):
         "lid": "6052",
         "gid": "11326",
         "start": startTime[:10],
-        "end": (datetime.strptime(startTime[:10], "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+        "end": (datetime.strptime(startTime[:10], "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d") #Turns the start time to a Date object, adds a day to it, then turns it back into a string
     }
 
     response = session.post(url, headers=headers, data=data)
@@ -81,9 +82,7 @@ def book_room(room, startTime, name):
         checksum = bookings[0]['checksum']
         end = bookings[0]['end']
         print("checksum:", checksum)
-        #print("The text was", response.text)
 
-        #book room here
         url = "https://oberlin.libcal.com/ajax/space/book"
         headers = {
         "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -99,8 +98,7 @@ def book_room(room, startTime, name):
         "Sec-Fetch-Site": "same-origin",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
         }
-        print("startTime: " + startTime)
-        print ("end " + end)
+        
         data = {
         "session": "36627955",
         "fname": name,
@@ -123,7 +121,6 @@ def book_room(room, startTime, name):
         "method": "11"
         }
 
-        #print(json.dumps(data))
         response = session.post(url, headers=headers, data=data)
 
         if response.status_code == 200:
@@ -134,7 +131,7 @@ def book_room(room, startTime, name):
         print(response.text)
         print(startTime[:11])
 
-
+#Get all the avaliable rooms and loads them into a dictionary called times
 def get_rooms(date):
     
     url = "https://oberlin.libcal.com/spaces/availability/grid"
@@ -153,7 +150,7 @@ def get_rooms(date):
     "Sec-Fetch-Site": "same-origin",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
     }
-    print((datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d"))
+
     data = {
         "lid": 6052,
         "gid": 11326,
@@ -162,7 +159,7 @@ def get_rooms(date):
         "seatId": 0,
         "zone": 0,
         "start": date,
-        "end": (datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d"),
+        "end": (datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d"), #turns the date string into a date object, adds a day then turns the date object back into a string
         "pageIndex": 0,
         "pageSize": 18
     }
@@ -170,20 +167,15 @@ def get_rooms(date):
     response = session.post(url, headers=headers, data=data)
     response_json = response.json()
 
-    #print(response.text)
+    #Adds all the avaliable times to times
     for i in response_json.get("slots"):
         if times.get(i.get("itemId")) == None:
             times.update({i.get("itemId"): {i.get("start"): i}})
         else:
             times.get(i.get("itemId")).update({i.get("start"): i})
     
-    #print(times.get(43398))
 
 
-#MUDD_url_req = requests.get('https://oberlin.libcal.com/reserve/mudd-main-level-study-rooms')
-#MUDD_soup = BeautifulSoup(MUDD_url_req.text, 'html.parser')
-
-#print(MUDD_soup.title.text)
 
 #book_room()
 get_rooms("2023-10-24")
