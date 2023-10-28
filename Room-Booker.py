@@ -16,7 +16,7 @@ eid_arr = {
     "112A" : 55292
 }
 
-booking_count = 1
+booking_count = 2
 
 times ={}
 
@@ -69,18 +69,26 @@ def book_room(room, startTime, endTime, name):
     }
 
     response = session.post(url, headers=headers, data=data)
-    response_json = response.json()
+    response_json = ""
+    try:
+        response_json = response.json()
+    except:
+        return "There was an error adding the selected room\nAdd says " + response.text
     print("Add returned a", response.status_code)
+
+    if response_json.get("error") == "Sorry, the selected times have become unavailable.":
+        return "The selected booking is already taken :("
 
     #updates the booking to be of the requested time
     updateChecksum = ""
-
-    print(response_json)
-    j = 0
-    for i in response_json.get("bookings")[0].get("options"):
-        if datetime.strptime(i, "%Y-%m-%d %H:%M:%S") == datetime.strptime(endTime, "%Y-%m-%d %H:%M:%S"):
-            updateChecksum = response_json.get("bookings")[0].get("optionChecksums")[j]  
-        j += 1
+    if response_json.get("bookings") != None:
+        j = 0
+        for i in response_json.get("bookings")[0].get("options"):
+            if datetime.strptime(i, "%Y-%m-%d %H:%M:%S") == datetime.strptime(endTime, "%Y-%m-%d %H:%M:%S"):
+                updateChecksum = response_json.get("bookings")[0].get("optionChecksums")[j]  
+            j += 1
+    else:
+        return "We could not find the requested end time"
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
     headers = {
@@ -114,8 +122,10 @@ def book_room(room, startTime, endTime, name):
     }
 
     response = session.post(url, headers=headers, data=data)
-    print("Add update says " + response.text)
-    response_json = response.json()
+    try:
+        response_json = response.json()
+    except:
+        return "there was an issue updating the added booking\nUpdate add says " + response.text
     print("Add Update returned a", response.status_code)
     checksum = ""
     end = ""
@@ -170,13 +180,18 @@ def book_room(room, startTime, endTime, name):
 
         response = session.post(url, headers=headers, data=data)
 
+        if response.text == "<p>Mudd 101A: This booking is too close to a previous booking you have made. This category has a limit of 1 hour between bookings.</p>":
+            booking_count += 1
+            return book_room(room, startTime, endTime, name)
+
         if response.status_code == 200:
             booking_count += 1
+        else:
+            return "There was an error booking the room\nThe response says " + response.text
 
 
-        print(response.status_code)
-        print(response.text)
-        print(startTime[:11])
+        print("Book returned a " + str(response.status_code))
+        return "Your room was booked successfully"
 
 #Get all the avaliable rooms and loads them into a dictionary called times
 def get_rooms(date):
@@ -226,4 +241,4 @@ def get_rooms(date):
 
 #book_room()
 get_rooms("2023-10-30")
-print(book_room("101A", "2023-10-30 08:00:00", "2023-10-30 08:15:00", "Josh Toker"))
+print(book_room("101A", "2023-10-30 09:00:00", "2023-10-30 09:15:00", "Josh Toker"))
