@@ -16,13 +16,13 @@ eid_arr = {
     "112A" : 55292
 }
 
-booking_count = 0
+booking_count = 1
 
 times ={}
 
 session = requests.Session()
 
-def book_room(room, startTime, name):
+def book_room(room, startTime, endTime, name):
     global booking_count
 
     #add room here
@@ -36,9 +36,9 @@ def book_room(room, startTime, name):
 
     if not (eid in eid_arr.values()):
         return "An invalid room was given"
-
+    
     if times.get(eid) == None:
-        return "an invalid start time was given"
+        return "get_rooms was not called or failed to generate rooms"
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
     headers = {
@@ -69,13 +69,60 @@ def book_room(room, startTime, name):
     }
 
     response = session.post(url, headers=headers, data=data)
+    response_json = response.json()
     print("Add returned a", response.status_code)
+
+    #updates the booking to be of the requested time
+    updateChecksum = ""
+
+    print(response_json)
+    j = 0
+    for i in response_json.get("bookings")[0].get("options"):
+        if datetime.strptime(i, "%Y-%m-%d %H:%M:%S") == datetime.strptime(endTime, "%Y-%m-%d %H:%M:%S"):
+            updateChecksum = response_json.get("bookings")[0].get("optionChecksums")[j]  
+        j += 1
+
+    url = "https://oberlin.libcal.com/spaces/availability/booking/add"
+    headers = {
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    "Origin": "https://oberlin.libcal.com",
+    "Referer": "https://oberlin.libcal.com/reserve/mudd-main-level-study-rooms",
+    "Sec-Ch-Ua": "\"Microsoft Edge\";v=\"117\", \"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"117\"",
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": "\"Windows\"",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+    }
+    data = {
+        "update[id]": response_json.get("bookings")[0].get("id"),
+        "update[checksum]": updateChecksum,
+        "update[end]": endTime,
+        "add[eid]": str(eid),
+        "add[gid]": "11326",
+        "add[lid]": "6052",
+        "add[start]": startTime,
+        "add[checksum]": times.get(eid).get(startTime).get("checksum"),
+        "lid": "6052",
+        "gid": "11326",
+        "start": startTime[:10],
+        "end": (datetime.strptime(startTime[:10], "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d") #Turns the start time to a Date object, adds a day to it, then turns it back into a string
+    }
+
+    response = session.post(url, headers=headers, data=data)
+    print("Add update says " + response.text)
+    response_json = response.json()
+    print("Add Update returned a", response.status_code)
     checksum = ""
     end = ""
 
     #gets the checksum if the add is a sucess
     if response.text == "{\"error\":\"Sorry, the selected times have become unavailable.\",\"isRefreshRequired\":true}":
-        print("the selected booking is unavaliable")
+        return "the selected booking is unavaliable"
     else:
         response_json = response.json()
         bookings = response_json.get('bookings')
@@ -98,7 +145,7 @@ def book_room(room, startTime, name):
         "Sec-Fetch-Site": "same-origin",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
         }
-        
+
         data = {
         "session": "36627955",
         "fname": name,
@@ -178,5 +225,5 @@ def get_rooms(date):
 
 
 #book_room()
-get_rooms("2023-10-24")
-print(book_room("101C", "2023-10-24 23:15:00", "test"))
+get_rooms("2023-10-30")
+print(book_room("101A", "2023-10-30 08:00:00", "2023-10-30 08:15:00", "Josh Toker"))
