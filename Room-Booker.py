@@ -240,9 +240,15 @@ def get_rooms(date):
         else:
             times.get(i.get("itemId")).update({i.get("start"): i})
     
-
-
-
-
 get_rooms("2023-10-30")
 print(book_room("101A", "2023-10-30 09:30:00", "2023-10-30 01:15:00", "Josh Toker"))
+
+#Discord UI sucks so we are gonna prompt the user for when they want to book the room
+#The first response should have 3 drop down menus. One for a date, one for a Time and one for how many rooms they want to book. There should also be be 3 buttons that adjust the increments of time in the drop down menu.
+#The drop down menu should defualt to hour increments but there should be a 15 minute button and a 30 minute button.
+#Once a date and time are selected we should respond to them with 2 drop down menus. The first should be of all the avaliable rooms at their selected time and in parenthesis how long they can be booked for.
+#The second should be how long they want to book the selected room for. Finally their should be a sumbit button that finishes the booking.
+#Later 
+class RoomView(discord.ui.View):
+    async def display_times():
+        print("Not yet implemented")
