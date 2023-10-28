@@ -83,12 +83,16 @@ def book_room(room, startTime, endTime, name):
     updateChecksum = ""
     if response_json.get("bookings") != None:
         j = 0
-        for i in response_json.get("bookings")[0].get("options"):
+        #Loops through the other time options and finds the end time requested
+        for i in response_json.get("bookings")[0].get("options"): #We have to say bookings[0] becuase add always returns an array of bookings despite not being able to make more than 1 booking at a time
             if datetime.strptime(i, "%Y-%m-%d %H:%M:%S") == datetime.strptime(endTime, "%Y-%m-%d %H:%M:%S"):
                 updateChecksum = response_json.get("bookings")[0].get("optionChecksums")[j]  
             j += 1
     else:
-        return "We could not find the requested end time"
+        return "There was an issue adding your booking"
+
+    if updateChecksum == "":
+        return "The requested end time is not valid"
 
     url = "https://oberlin.libcal.com/spaces/availability/booking/add"
     headers = {
@@ -239,6 +243,6 @@ def get_rooms(date):
 
 
 
-#book_room()
+
 get_rooms("2023-10-30")
-print(book_room("101A", "2023-10-30 09:00:00", "2023-10-30 09:15:00", "Josh Toker"))
+print(book_room("101A", "2023-10-30 09:30:00", "2023-10-30 01:15:00", "Josh Toker"))
